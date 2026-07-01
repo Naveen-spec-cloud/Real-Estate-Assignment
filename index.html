@@ -703,7 +703,6 @@ function initVendors() {
     options:{
       responsive:true,maintainAspectRatio:false,layout:{padding:{top:22}},
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' ₹'+c.raw+' Cr'}},
-        /* FIX A: Stagger blue labels above bar, green labels rotated alongside bar to prevent collision */
         datalabels:{
           anchor: 'end',
           align:  ctx => ctx.datasetIndex === 0 ? 'end' : 'start',
@@ -772,7 +771,6 @@ function initStaff() {
     options:{
       responsive:true,maintainAspectRatio:false,layout:{padding:{top:22}},
       plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false},
-        /* FIX B: Show label every 2nd bar only, smaller font to prevent overlap */
         datalabels:{display:ctx=>ctx.datasetIndex===2&&ctx.dataIndex%2===0,anchor:'end',align:'end',offset:2,font:{size:7.5,weight:'600'},color:'#374151',clamp:true,
           formatter:(v,ctx)=>{const t=ctx.chart.data.datasets.reduce((s,ds)=>s+(ds.data[ctx.dataIndex]||0),0);return t>0?'₹'+t.toFixed(1)+'L':'';}
         }},
@@ -854,7 +852,6 @@ function initCostMT() {
     options:{
       responsive:true,maintainAspectRatio:false,layout:{padding:{top:24,right:10}},
       plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,callbacks:{label:c=>c.raw!=null?' '+c.dataset.label+': ₹'+c.raw+'/MT':''}},datalabels:{}},
-      /* FIX D: Use suggestedMax instead of hard max so tall outliers (e.g. ₹7780) still render with label room */
       scales:{x:{grid:{display:false},ticks:{maxRotation:40,font:{size:9}}},y:{grid:{color:G},ticks:{callback:v=>'₹'+v},border:{display:false},min:0,suggestedMax:9000}}
     }
   });
