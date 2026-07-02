@@ -47,8 +47,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
 .pill-amber{background:var(--amber-light);color:#92400e}
 .pill-red{background:var(--red-light);color:#991b1b}
 .pill-purple{background:var(--purple-light);color:#5b21b6}
+.pill-btn{cursor:pointer;border:1px solid transparent;transition:filter .12s}
+.pill-btn:hover{filter:brightness(0.95)}
+.pill-outline{background:var(--white);border:1px solid var(--border);color:var(--text-secondary)}
 .content{padding:20px 24px;flex:1}
-.page-header{margin-bottom:18px;display:flex;align-items:flex-end;justify-content:space-between}
+.page-header{margin-bottom:18px;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:10px}
 .page-title{font-size:18px;font-weight:600;color:var(--text-primary)}
 .page-sub{font-size:12px;color:var(--text-tertiary);margin-top:2px}
 .page-badges{display:flex;gap:6px;flex-wrap:wrap}
@@ -71,7 +74,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
 .kpi-val.purple{color:var(--purple)}
 .kpi-note{font-size:10px;color:var(--text-tertiary);margin-top:4px}
 .card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px}
-.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
 .card-title{font-size:13px;font-weight:600;color:var(--text-primary)}
 .row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:14px}
 .legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px}
@@ -79,7 +82,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
 .leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .leg-sq{width:8px;height:8px;border-radius:2px;flex-shrink:0}
 .vtable{width:100%;border-collapse:collapse;font-size:12px}
-.vtable th{padding:8px 10px;text-align:left;font-size:10px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--text-tertiary);background:var(--bg);border-bottom:1px solid var(--border);white-space:nowrap}
+.vtable th{padding:8px 10px;text-align:left;font-size:10px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--text-tertiary);background:var(--bg);border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0}
 .vtable td{padding:9px 10px;color:var(--text-primary);border-bottom:1px solid var(--border);vertical-align:middle}
 .vtable tr:last-child td{border-bottom:none}
 .vtable tr:hover td{background:#f9fafb}
@@ -97,6 +100,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
 .info-box.warn{background:#fffbeb;border-color:#fde68a;color:#92400e}
 .info-box strong{font-weight:600}
 .empty-note{font-size:11px;color:var(--text-tertiary);padding:10px 0}
+.search-box{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 12px;min-width:220px}
+.search-box i{color:var(--text-tertiary);font-size:15px}
+.search-box input{border:none;background:transparent;outline:none;font-size:12px;color:var(--text-primary);width:100%;font-family:var(--font)}
+.table-scroll{max-height:520px;overflow-y:auto}
 </style>
 </head>
 <body>
@@ -113,7 +120,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
     <div class="sb-label">Menu</div>
     <div class="sb-item active" onclick="nav(this,'overview')"><i class="ti ti-layout-dashboard"></i> Overview</div>
     <div class="sb-item" onclick="nav(this,'cashflow')"><i class="ti ti-cash"></i> Cash Flow</div>
+    <div class="sb-item" onclick="nav(this,'trend')"><i class="ti ti-timeline"></i> Monthly Trend</div>
     <div class="sb-item" onclick="nav(this,'vendors')"><i class="ti ti-truck"></i> Vendors</div>
+    <div class="sb-item" onclick="nav(this,'creditors')"><i class="ti ti-file-invoice"></i> Creditors Ledger</div>
     <div class="sb-item" onclick="nav(this,'staff')"><i class="ti ti-users"></i> Staff Salaries</div>
     <div class="sb-item" onclick="nav(this,'costmt')"><i class="ti ti-ruler-measure"></i> Cost per MT</div>
     <div class="sb-item" onclick="nav(this,'progress')"><i class="ti ti-chart-line"></i> S-Curve Progress</div>
@@ -228,6 +237,63 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
       </div>
     </div>
 
+    <!-- VIEW 3: MONTHLY TREND (NEW) -->
+    <div class="view" id="view-trend">
+      <div class="page-header">
+        <div><div class="page-title">Monthly Cash Inflow vs Outflow</div><div class="page-sub">Billing, expenditure, deductions &amp; running cash position — Aug'24 to Mar'26</div></div>
+        <div class="page-badges">
+          <span class="pill pill-blue" id="tr-badge-months">— months</span>
+          <span class="pill pill-green" id="tr-badge-best">—</span>
+        </div>
+      </div>
+      <div class="kpi4">
+        <div class="kpi-card"><div><div class="kpi-label">Total Billing Value</div><div class="kpi-val blue" id="tr-total-billing">—</div><div class="kpi-note">Patch Work + MMR + Toll</div></div><div class="kpi-icon blue"><i class="ti ti-file-invoice"></i></div></div>
+        <div class="kpi-card"><div><div class="kpi-label">Total Expenditure</div><div class="kpi-val red" id="tr-total-expend">—</div><div class="kpi-note">Admin+Manpower+Machinery+Materials+Misc</div></div><div class="kpi-icon red"><i class="ti ti-receipt-2"></i></div></div>
+        <div class="kpi-card"><div><div class="kpi-label">Total Deductions</div><div class="kpi-val amber" id="tr-total-deduct">—</div><div class="kpi-note">Aggregates stock balance adj.</div></div><div class="kpi-icon amber"><i class="ti ti-minus"></i></div></div>
+        <div class="kpi-card"><div><div class="kpi-label">Latest Net Position</div><div class="kpi-val green" id="tr-net-pos">—</div><div class="kpi-note" id="tr-net-note">—</div></div><div class="kpi-icon green"><i class="ti ti-scale"></i></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Monthly Billing vs Expenditure (₹ Lakhs)</div>
+          <div class="legend" style="margin:0">
+            <span class="leg"><span class="leg-sq" style="background:rgba(37,99,235,0.5)"></span>Total Billing</span>
+            <span class="leg"><span class="leg-sq" style="background:rgba(220,38,38,0.5)"></span>Total Expenditure</span>
+          </div>
+        </div>
+        <div style="position:relative;height:250px"><canvas id="tr-bar"></canvas></div>
+      </div>
+      <div class="row2">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Outflow Composition (₹ Lakhs)</div>
+            <div class="legend" style="margin:0">
+              <span class="leg"><span class="leg-sq" style="background:#2563eb"></span>Admin</span>
+              <span class="leg"><span class="leg-sq" style="background:#16a34a"></span>Manpower</span>
+              <span class="leg"><span class="leg-sq" style="background:#d97706"></span>Machinery</span>
+              <span class="leg"><span class="leg-sq" style="background:#7c3aed"></span>Materials</span>
+              <span class="leg"><span class="leg-sq" style="background:#dc2626"></span>Misc</span>
+            </div>
+          </div>
+          <div style="position:relative;height:250px"><canvas id="tr-stack"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Cumulative Running Cost vs Net Position (₹ Cr)</div></div>
+          <div style="position:relative;height:250px"><canvas id="tr-line"></canvas></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Month-by-Month Detail</div></div>
+        <div style="overflow-x:auto">
+          <table class="vtable" style="min-width:920px">
+            <thead><tr>
+              <th>Month</th><th class="tr">Billing</th><th class="tr">Admin</th><th class="tr">Manpower</th><th class="tr">Machinery</th><th class="tr">Materials</th><th class="tr">Misc</th><th class="tr">Total Expend.</th><th class="tr">Deductions</th><th class="tr">Net Position</th><th>Status</th>
+            </tr></thead>
+            <tbody id="tr-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- VIEW 4: VENDORS -->
     <div class="view" id="view-vendors">
       <div class="page-header">
@@ -256,7 +322,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
       </div>
       <div class="card" style="padding:0">
         <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
-          <div class="card-title">Full Vendor Ledger</div>
+          <div class="card-title">Full Vendor Ledger (by Category)</div>
           <span class="pill pill-blue" id="vn-count-badge">— categories</span>
         </div>
         <div style="overflow-x:auto">
@@ -268,15 +334,52 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
       </div>
     </div>
 
-    <!-- VIEW 5: STAFF SALARIES -->
+    <!-- VIEW 5: CREDITORS LEDGER (NEW - vendor-level detail) -->
+    <div class="view" id="view-creditors">
+      <div class="page-header">
+        <div><div class="page-title">Creditors Ledger</div><div class="page-sub">Vendor-by-vendor payable detail, as of report date</div></div>
+        <div class="page-badges">
+          <span class="pill pill-blue" id="cr-badge-count">— vendors</span>
+          <span class="pill pill-red" id="cr-badge-open">— with dues</span>
+        </div>
+      </div>
+      <div class="kpi3">
+        <div class="kpi-card"><div><div class="kpi-label">Total Outstanding</div><div class="kpi-val blue" id="cr-outstanding-val">—</div><div class="kpi-note">Across all vendors</div></div><div class="kpi-icon blue"><i class="ti ti-file-invoice"></i></div></div>
+        <div class="kpi-card"><div><div class="kpi-label">Total Paid</div><div class="kpi-val green" id="cr-paid-val">—</div><div class="kpi-note">Cleared to date</div></div><div class="kpi-icon green"><i class="ti ti-circle-check"></i></div></div>
+        <div class="kpi-card"><div><div class="kpi-label">Balance Payable</div><div class="kpi-val red" id="cr-balance-val">—</div><div class="kpi-note">Net amount still owed</div></div><div class="kpi-icon red"><i class="ti ti-alert-triangle"></i></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Balance Payable by Category (₹ Lakhs)</div>
+        </div>
+        <div style="position:relative;height:260px"><canvas id="cr-cat-bar"></canvas></div>
+      </div>
+      <div class="card" style="padding:0">
+        <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+          <div class="card-title">All Vendors</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <div class="search-box"><i class="ti ti-search"></i><input id="cr-search" placeholder="Search vendor or description…" oninput="renderCreditorsTable()"></div>
+            <div id="cr-cat-filters" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table class="vtable">
+            <thead><tr><th>Vendor</th><th>Category</th><th>Description</th><th class="tr">Outstanding</th><th class="tr">Paid</th><th class="tr">Balance</th></tr></thead>
+            <tbody id="cr-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 6: STAFF SALARIES -->
     <div class="view" id="view-staff">
       <div class="page-header">
-        <div><div class="page-title">Staff Salaries</div><div class="page-sub">On-roll, NMR manpower and RA bill payments</div></div>
+        <div><div class="page-title">Staff Salaries</div><div class="page-sub">On-roll, off-roll manpower and RA bill payments (Apr'24–Mar'26)</div></div>
       </div>
       <div class="kpi4">
-        <div class="kpi-card"><div><div class="kpi-label">Total Salary Paid</div><div class="kpi-val blue" id="st-total-val">—</div><div class="kpi-note" id="st-total-note">—</div></div><div class="kpi-icon blue"><i class="ti ti-wallet"></i></div></div>
-        <div class="kpi-card"><div><div class="kpi-label">Staff Salaries</div><div class="kpi-val" id="st-staff-val">—</div><div class="kpi-note">On-roll total</div></div><div class="kpi-icon green"><i class="ti ti-user-check"></i></div></div>
-        <div class="kpi-card"><div><div class="kpi-label">NMR Manpower</div><div class="kpi-val" id="st-nmr-val">—</div><div class="kpi-note">Off-roll/NMR total</div></div><div class="kpi-icon amber"><i class="ti ti-user-plus"></i></div></div>
+        <div class="kpi-card"><div><div class="kpi-label">Total Paid (Salary+RA+NMR)</div><div class="kpi-val blue" id="st-total-val">—</div><div class="kpi-note" id="st-total-note">—</div></div><div class="kpi-icon blue"><i class="ti ti-wallet"></i></div></div>
+        <div class="kpi-card"><div><div class="kpi-label">Staff Salaries (On-roll)</div><div class="kpi-val" id="st-staff-val">—</div><div class="kpi-note">On-roll total</div></div><div class="kpi-icon green"><i class="ti ti-user-check"></i></div></div>
+        <div class="kpi-card"><div><div class="kpi-label">Off-roll + NMR Manpower</div><div class="kpi-val" id="st-nmr-val">—</div><div class="kpi-note">Off-roll/Stipend total</div></div><div class="kpi-icon amber"><i class="ti ti-user-plus"></i></div></div>
         <div class="kpi-card"><div><div class="kpi-label">RA Bills Paid</div><div class="kpi-val" id="st-ra-val">—</div><div class="kpi-note">Running account bills</div></div><div class="kpi-icon blue"><i class="ti ti-receipt"></i></div></div>
       </div>
       <div class="row2">
@@ -292,20 +395,22 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
           <div style="position:relative;height:235px"><canvas id="sal-bar"></canvas></div>
         </div>
         <div class="card">
-          <div class="card-header"><div class="card-title">Staff Headcount Trend</div></div>
+          <div class="card-header"><div class="card-title">Staff Headcount Trend (On-roll / Off-roll)</div></div>
           <div style="position:relative;height:235px"><canvas id="hc-line"></canvas></div>
         </div>
       </div>
       <div class="card">
         <div class="card-header"><div class="card-title">Month-by-Month Salary Detail</div></div>
         <div style="overflow-x:auto">
-          <table class="vtable" style="min-width:700px">
+          <table class="vtable" style="min-width:760px">
             <thead><tr>
               <th style="min-width:75px">Month</th>
               <th class="tr" style="min-width:130px">Staff Salary (₹)</th>
               <th class="tr" style="min-width:115px">RA Bills (₹)</th>
-              <th class="tr" style="min-width:145px">NMR Manpower (₹)</th>
+              <th class="tr" style="min-width:145px">Off-roll/NMR (₹)</th>
               <th class="tr" style="min-width:115px">Total (₹)</th>
+              <th class="tr" style="min-width:70px">On-roll</th>
+              <th class="tr" style="min-width:70px">Off-roll</th>
               <th class="tr" style="min-width:90px">Headcount</th>
             </tr></thead>
             <tbody id="sal-table"></tbody>
@@ -314,7 +419,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
       </div>
     </div>
 
-    <!-- VIEW 6: COST PER MT -->
+    <!-- VIEW 7: COST PER MT -->
     <div class="view" id="view-costmt">
       <div class="page-header">
         <div><div class="page-title">Cost per MT Tracker</div><div class="page-sub">Planned vs Quoted vs Actual</div></div>
@@ -378,7 +483,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
       </div>
     </div>
 
-    <!-- VIEW 7: S-CURVE PROGRESS -->
+    <!-- VIEW 8: S-CURVE PROGRESS -->
     <div class="view" id="view-progress">
       <div class="page-header">
         <div><div class="page-title">S-Curve Progress</div><div class="page-sub">Target vs Achievement — cumulative billing (₹ Crores)</div></div>
@@ -394,7 +499,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text-primary);font
       </div>
       <div class="card" id="sc-missing-note" style="display:none">
         <div class="info-box warn" style="margin-bottom:0">
-          <strong>No s_curve data found.</strong> This view reads from an <code>s_curve</code> table (month_label, month_date, target, achieved) that isn't in the schema you ran yet — add it in Supabase to populate this page.
+          <strong>No s_curve data found.</strong> This view reads from an <code>s_curve</code> table (month_label, month_date, target, achieved) — run the provided SQL script in Supabase to populate it.
         </div>
       </div>
       <div class="card">
@@ -440,6 +545,7 @@ const G = 'rgba(0,0,0,0.05)';
 const fmtINR = v => '₹' + Number(v).toLocaleString('en-IN');
 const toCr = v => (v / 1e7).toFixed(2);
 const crFmt = v => '₹' + (v/1e7).toFixed(2) + ' Cr';
+const lakhFmt = v => '₹' + (v/1e5).toFixed(1) + 'L';
 
 // ─── SUPABASE CONFIG ────────────────────────────────────────────────────────
 const SUPABASE_URL = 'https://pqjkngkgxjxqnfkvnmut.supabase.co';
@@ -453,16 +559,19 @@ const sb = (SUPABASE_URL.startsWith('http') && window.supabase)
 let PROJECT   = null;
 let CASHFLOW  = null;
 let VENDORS   = [];
+let CREDITORS = [];
+let MONTHLY   = [];
 let SALARY    = [];
 let COSTMT    = [];
 let SCURVE    = [];
 let dataReady = false;
+let crActiveCategory = null;
 
 // ─── NAVIGATION ─────────────────────────────────────────────────────────────
 const viewTitles = {
-  overview:'Executive Overview', cashflow:'Cash Flow',
-  vendors:'Vendor Ledger', staff:'Staff Salaries', costmt:'Cost per MT',
-  progress:'S-Curve Progress'
+  overview:'Executive Overview', cashflow:'Cash Flow', trend:'Monthly Trend',
+  vendors:'Vendor Ledger', creditors:'Creditors Ledger', staff:'Staff Salaries',
+  costmt:'Cost per MT', progress:'S-Curve Progress'
 };
 const inited = {};
 function nav(el, id) {
@@ -475,12 +584,14 @@ function nav(el, id) {
   if (!inited[id]) { inited[id] = true; initView(id); }
 }
 function initView(id) {
-  if      (id === 'overview') initOverview();
-  else if (id === 'cashflow') initCashflow();
-  else if (id === 'vendors')  initVendors();
-  else if (id === 'staff')    initStaff();
-  else if (id === 'costmt')   initCostMT();
-  else if (id === 'progress') initProgress();
+  if      (id === 'overview')  initOverview();
+  else if (id === 'cashflow')  initCashflow();
+  else if (id === 'trend')     initTrend();
+  else if (id === 'vendors')   initVendors();
+  else if (id === 'creditors') initCreditors();
+  else if (id === 'staff')     initStaff();
+  else if (id === 'costmt')    initCostMT();
+  else if (id === 'progress')  initProgress();
 }
 
 // ─── SUPABASE DATA LOAD ─────────────────────────────────────────────────────
@@ -489,10 +600,12 @@ async function loadData() {
     throw new Error('Supabase is not configured. Set SUPABASE_URL and SUPABASE_ANON_KEY at the top of the script.');
   }
 
-  const [projRes, cfRes, vendRes, salRes, costRes, scRes] = await Promise.all([
+  const [projRes, cfRes, vendRes, credRes, monRes, salRes, costRes, scRes] = await Promise.all([
     sb.from('projects').select('*').eq('id', PROJECT_ID).maybeSingle(),
     sb.from('cashflow_summary').select('*').eq('project_id', PROJECT_ID).maybeSingle(),
     sb.from('vendor_ledger').select('*').eq('project_id', PROJECT_ID).order('sort_order'),
+    sb.from('creditors_detail').select('*').eq('project_id', PROJECT_ID).order('id'),
+    sb.from('monthly_cashflow').select('*').eq('project_id', PROJECT_ID).order('month_date'),
     sb.from('salary_data').select('*').eq('project_id', PROJECT_ID).order('month_date'),
     sb.from('cost_per_mt').select('*').eq('project_id', PROJECT_ID).order('month_date'),
     sb.from('s_curve').select('*').eq('project_id', PROJECT_ID).order('month_date')
@@ -501,18 +614,18 @@ async function loadData() {
   if (projRes.error) throw projRes.error;
   if (cfRes.error)   throw cfRes.error;
   if (vendRes.error) throw vendRes.error;
-  if (salRes.error)  throw salRes.error;
-  if (costRes.error) throw costRes.error;
 
-  PROJECT  = projRes.data;
-  CASHFLOW = cfRes.data;
-  VENDORS  = (vendRes.data || []).map(v => ({...v, balance: Math.max(0, (v.outstanding||0) - (v.paid||0))}));
-  SALARY   = salRes.data || [];
-  COSTMT   = (costRes.data || []).map(d => ({
+  PROJECT   = projRes.data;
+  CASHFLOW  = cfRes.data;
+  VENDORS   = (vendRes.data || []).map(v => ({...v, balance: Math.max(0, (v.outstanding||0) - (v.paid||0))}));
+  CREDITORS = credRes.error ? [] : (credRes.data || []);
+  MONTHLY   = monRes.error ? [] : (monRes.data || []).map(d => ({...d, month: d.month_label}));
+  SALARY    = salRes.error ? [] : (salRes.data || []);
+  COSTMT    = (costRes.data || []).map(d => ({
     month: d.month_label, billed: d.billed_mt, wd: d.workdone_mt,
     actual: d.cost_actual, planned: d.cost_planned, quoted: d.cost_quoted
   }));
-  SCURVE   = scRes.error ? [] : (scRes.data || []).map(d => ({ month: d.month_label, target: d.target, achieved: d.achieved }));
+  SCURVE    = scRes.error ? [] : (scRes.data || []).map(d => ({ month: d.month_label, target: d.target, achieved: d.achieved }));
 
   if (!PROJECT)  throw new Error('No row found in "projects" for project_id ' + PROJECT_ID);
   if (!CASHFLOW) throw new Error('No row found in "cashflow_summary" for project_id ' + PROJECT_ID);
@@ -673,6 +786,91 @@ function initCashflow() {
   renderCashflowKpis();
 }
 
+// ─── RENDER + INIT MONTHLY TREND (NEW) ──────────────────────────────────────
+function initTrend() {
+  if (!MONTHLY.length) {
+    document.getElementById('tr-badge-months').textContent = 'No data';
+    return;
+  }
+  const labs = MONTHLY.map(d=>d.month_label);
+  const billing = MONTHLY.map(d=>d.total_billing);
+  const expend  = MONTHLY.map(d=>d.total_expenditure);
+
+  const totalBilling = billing.reduce((a,b)=>a+b,0);
+  const totalExpend  = expend.reduce((a,b)=>a+b,0);
+  const totalDeduct  = MONTHLY.reduce((a,d)=>a+(d.deductions||0),0);
+  const latest = MONTHLY[MONTHLY.length-1];
+  const bestMonth = MONTHLY.reduce((best,d)=> (d.net_position>best.net_position?d:best), MONTHLY[0]);
+
+  document.getElementById('tr-badge-months').textContent = `${MONTHLY.length} months`;
+  document.getElementById('tr-badge-best').textContent = `Best: ${bestMonth.month_label} (${crFmt(bestMonth.net_position)})`;
+  document.getElementById('tr-total-billing').textContent = crFmt(totalBilling);
+  document.getElementById('tr-total-expend').textContent = crFmt(totalExpend);
+  document.getElementById('tr-total-deduct').textContent = crFmt(totalDeduct);
+  document.getElementById('tr-net-pos').textContent = crFmt(latest.net_position);
+  document.getElementById('tr-net-note').textContent = `${latest.month_label} · running cash position`;
+
+  new Chart(document.getElementById('tr-bar'), {
+    type:'bar',
+    data:{labels:labs, datasets:[
+      {label:'Total Billing', data:MONTHLY.map(d=>+(d.total_billing/1e5).toFixed(2)), backgroundColor:'rgba(37,99,235,0.5)', borderColor:'#2563eb', borderWidth:1, borderRadius:3},
+      {label:'Total Expenditure', data:MONTHLY.map(d=>+(d.total_expenditure/1e5).toFixed(2)), backgroundColor:'rgba(220,38,38,0.5)', borderColor:'#dc2626', borderWidth:1, borderRadius:3}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,layout:{padding:{top:4}},
+      plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,callbacks:{label:c=>' '+c.dataset.label+': ₹'+c.raw+'L'}},datalabels:{display:false}},
+      scales:{x:{grid:{display:false},ticks:{maxRotation:45,font:{size:8.5}}},y:{grid:{color:G},ticks:{callback:v=>'₹'+v+'L'},border:{display:false}}}
+    }
+  });
+
+  new Chart(document.getElementById('tr-stack'), {
+    type:'bar',
+    data:{labels:labs, datasets:[
+      {label:'Admin',data:MONTHLY.map(d=>+(d.admin/1e5).toFixed(2)),backgroundColor:'#2563eb',stack:'s'},
+      {label:'Manpower',data:MONTHLY.map(d=>+(d.manpower/1e5).toFixed(2)),backgroundColor:'#16a34a',stack:'s'},
+      {label:'Machinery',data:MONTHLY.map(d=>+(d.machinery/1e5).toFixed(2)),backgroundColor:'#d97706',stack:'s'},
+      {label:'Materials',data:MONTHLY.map(d=>+(d.materials/1e5).toFixed(2)),backgroundColor:'#7c3aed',stack:'s'},
+      {label:'Misc',data:MONTHLY.map(d=>+(d.misc/1e5).toFixed(2)),backgroundColor:'#dc2626',stack:'s'}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,layout:{padding:{top:4}},
+      plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false},datalabels:{display:false}},
+      scales:{x:{stacked:true,grid:{display:false},ticks:{maxRotation:45,font:{size:8.5}}},y:{stacked:true,grid:{color:G},ticks:{callback:v=>'₹'+v+'L'},border:{display:false}}}
+    }
+  });
+
+  new Chart(document.getElementById('tr-line'), {
+    type:'line',
+    data:{labels:labs, datasets:[
+      {label:'Running Cost (Cum.)',data:MONTHLY.map(d=>+(d.running_cost_cum/1e7).toFixed(2)),borderColor:'#dc2626',backgroundColor:'rgba(220,38,38,0.06)',fill:true,tension:0.3,pointRadius:3,borderWidth:2},
+      {label:'Net Position',data:MONTHLY.map(d=>+(d.net_position/1e7).toFixed(2)),borderColor:'#16a34a',backgroundColor:'rgba(34,197,94,0.08)',fill:true,tension:0.3,pointRadius:3,borderWidth:2}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,layout:{padding:{top:18}},
+      plugins:{legend:{position:'bottom',labels:{boxWidth:8,font:{size:9.5},usePointStyle:true}},tooltip:{mode:'index',intersect:false,callbacks:{label:c=>' '+c.dataset.label+': ₹'+c.raw+' Cr'}},datalabels:{display:false}},
+      scales:{x:{grid:{display:false},ticks:{maxRotation:45,font:{size:8.5}}},y:{grid:{color:G},ticks:{callback:v=>'₹'+v+'Cr'},border:{display:false}}}
+    }
+  });
+
+  document.getElementById('tr-table').innerHTML = MONTHLY.map(d=>{
+    const positive = d.net_position >= 0;
+    const status = positive ? '<span class="pill pill-green">Profit</span>' : '<span class="pill pill-red">Loss</span>';
+    return `<tr>
+      <td>${d.month_label}</td>
+      <td class="tr tm">${crFmt(d.total_billing)}</td>
+      <td class="tr tm">${crFmt(d.admin)}</td>
+      <td class="tr tm">${crFmt(d.manpower)}</td>
+      <td class="tr tm">${crFmt(d.machinery)}</td>
+      <td class="tr tm">${crFmt(d.materials)}</td>
+      <td class="tr tm">${crFmt(d.misc)}</td>
+      <td class="tr tm">${crFmt(d.total_expenditure)}</td>
+      <td class="tr tm">${crFmt(d.deductions)}</td>
+      <td class="tr" style="font-weight:600;color:${positive?'var(--green-dark)':'var(--red)'}">${crFmt(d.net_position)}</td>
+      <td>${status}</td>
+    </tr>`;
+  }).join('');
+}
+
 // ─── RENDER + INIT VENDORS ──────────────────────────────────────────────────
 function renderVendorsKpis() {
   const totalOutstanding = VENDORS.reduce((s,v)=>s+(v.outstanding||0),0);
@@ -744,6 +942,74 @@ function initVendors() {
   renderVendorsKpis();
 }
 
+// ─── RENDER + INIT CREDITORS (NEW — vendor-level ledger) ────────────────────
+function initCreditors() {
+  if (!CREDITORS.length) {
+    document.getElementById('cr-badge-count').textContent = 'No data';
+    return;
+  }
+  const totalOutstanding = CREDITORS.reduce((s,c)=>s+(c.outstanding||0),0);
+  const totalPaid = CREDITORS.reduce((s,c)=>s+(c.paid||0),0);
+  const totalBalance = CREDITORS.reduce((s,c)=>s+(c.balance||0),0);
+  const openCount = CREDITORS.filter(c=>c.balance>0).length;
+
+  document.getElementById('cr-badge-count').textContent = `${CREDITORS.length} vendors`;
+  document.getElementById('cr-badge-open').textContent = `${openCount} with dues`;
+  document.getElementById('cr-outstanding-val').textContent = crFmt(totalOutstanding);
+  document.getElementById('cr-paid-val').textContent = crFmt(totalPaid);
+  document.getElementById('cr-balance-val').textContent = crFmt(totalBalance);
+
+  const cats = {};
+  CREDITORS.forEach(c=>{
+    const k = c.category || 'Other';
+    cats[k] = (cats[k]||0) + Math.max(0,c.balance||0);
+  });
+  const catNames = Object.keys(cats);
+  new Chart(document.getElementById('cr-cat-bar'), {
+    type:'bar',
+    data:{labels:catNames, datasets:[{
+      data:catNames.map(k=>+(cats[k]/1e5).toFixed(2)),
+      backgroundColor:'rgba(220,38,38,0.4)', borderColor:'#dc2626', borderWidth:1.5, borderRadius:4
+    }]},
+    options:{
+      responsive:true,maintainAspectRatio:false,layout:{padding:{top:22}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' ₹'+c.raw+'L'}},
+        datalabels:{anchor:'end',align:'end',offset:2,font:{size:9,weight:'600'},color:'#991b1b',clamp:true,formatter:v=>v>0?'₹'+v+'L':''}},
+      scales:{x:{grid:{display:false},ticks:{maxRotation:35,font:{size:9}}},y:{grid:{color:G},ticks:{callback:v=>'₹'+v+'L'},border:{display:false}}}
+    }
+  });
+
+  const catFiltersEl = document.getElementById('cr-cat-filters');
+  catFiltersEl.innerHTML = `<span class="pill pill-outline pill-btn" onclick="setCatFilter(null)" id="cr-cat-all">All</span>` +
+    catNames.map(c=>`<span class="pill pill-outline pill-btn" onclick="setCatFilter('${c.replace(/'/g,"\\'")}')">${c}</span>`).join('');
+
+  renderCreditorsTable();
+}
+function setCatFilter(cat) {
+  crActiveCategory = cat;
+  document.querySelectorAll('#cr-cat-filters .pill').forEach(p=>p.classList.remove('pill-blue'));
+  document.querySelectorAll('#cr-cat-filters .pill').forEach(p=>p.classList.add('pill-outline'));
+  renderCreditorsTable();
+}
+function renderCreditorsTable() {
+  const q = (document.getElementById('cr-search').value || '').toLowerCase();
+  let rows = CREDITORS;
+  if (crActiveCategory) rows = rows.filter(c=>c.category===crActiveCategory);
+  if (q) rows = rows.filter(c=> (c.vendor_name||'').toLowerCase().includes(q) || (c.description||'').toLowerCase().includes(q));
+  rows = rows.slice().sort((a,b)=>(b.balance||0)-(a.balance||0));
+  document.getElementById('cr-table').innerHTML = rows.map(c=>{
+    const balCol = c.balance>0 ? 'var(--red)' : (c.balance<0 ? 'var(--amber)' : 'var(--green-dark)');
+    return `<tr>
+      <td style="font-weight:500">${c.vendor_name}</td>
+      <td class="tm"><span class="pill pill-blue">${c.category||'—'}</span></td>
+      <td class="tm">${c.description||'—'}</td>
+      <td class="tr tm">${c.outstanding?'₹'+toCr(c.outstanding)+' Cr':'—'}</td>
+      <td class="tr" style="color:#15803d">₹${toCr(c.paid)} Cr</td>
+      <td class="tr" style="font-weight:600;color:${balCol}">${c.balance?'₹'+toCr(c.balance)+' Cr':'—'}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="6" class="empty-note">No matching vendors.</td></tr>';
+}
+
 // ─── RENDER + INIT STAFF ────────────────────────────────────────────────────
 function renderStaffKpis() {
   const staffTotal = SALARY.reduce((s,d)=>s+(d.staff_sal||0),0);
@@ -765,8 +1031,8 @@ function initStaff() {
     type:'bar',
     data:{labels:labs, datasets:[
       {label:'Staff Salary',data:SALARY.map(d=>+(d.staff_sal/1e5).toFixed(2)),backgroundColor:'rgba(37,99,235,0.5)',borderWidth:0,stack:'s'},
-      {label:'RA Bills',    data:SALARY.map(d=>+(d.ra_bills/1e5).toFixed(2)), backgroundColor:'rgba(34,197,94,0.5)', borderWidth:0,stack:'s'},
-      {label:'NMR Manpower',data:SALARY.map(d=>+(d.nmr_manpower/1e5).toFixed(2)),backgroundColor:'rgba(217,119,6,0.6)', borderWidth:0,stack:'s'}
+      {label:'NMR Manpower',data:SALARY.map(d=>+(d.nmr_manpower/1e5).toFixed(2)),backgroundColor:'rgba(34,197,94,0.5)', borderWidth:0,stack:'s'},
+      {label:'RA Bills',    data:SALARY.map(d=>+(d.ra_bills/1e5).toFixed(2)), backgroundColor:'rgba(217,119,6,0.6)',borderWidth:0,stack:'s'}
     ]},
     options:{
       responsive:true,maintainAspectRatio:false,layout:{padding:{top:22}},
@@ -783,15 +1049,13 @@ function initStaff() {
 
   new Chart(document.getElementById('hc-line'), {
     type:'line',
-    data:{labels:labs, datasets:[{
-      label:'Headcount',data:SALARY.map(d=>d.headcount),
-      borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.07)',
-      fill:true,tension:0.35,pointRadius:3,borderWidth:2
-    }]},
+    data:{labels:labs, datasets:[
+      {label:'On-roll',data:SALARY.map(d=>d.on_roll),borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.07)',fill:true,tension:0.35,pointRadius:2,borderWidth:2},
+      {label:'Off-roll',data:SALARY.map(d=>d.off_roll),borderColor:'#16a34a',backgroundColor:'rgba(34,197,94,0.07)',fill:true,tension:0.35,pointRadius:2,borderWidth:2}
+    ]},
     options:{
       responsive:true,maintainAspectRatio:false,layout:{padding:{top:18}},
-      plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false},
-        datalabels:{display:ctx=>ctx.dataIndex%2===0,anchor:'top',align:'top',offset:2,font:{size:8,weight:'600'},color:'#2563eb',clamp:true}},
+      plugins:{legend:{position:'bottom',labels:{boxWidth:8,font:{size:9.5},usePointStyle:true}},tooltip:{mode:'index',intersect:false},datalabels:{display:false}},
       scales:{x:{grid:{display:false},ticks:{maxRotation:45,font:{size:8.5},autoSkip:true,maxTicksLimit:13}},y:{grid:{color:G},border:{display:false}}}
     }
   });
@@ -802,6 +1066,8 @@ function initStaff() {
     <td class="tr tm">${d.ra_bills>0?fmtINR(d.ra_bills):'—'}</td>
     <td class="tr tm">${d.nmr_manpower>0?fmtINR(d.nmr_manpower):'—'}</td>
     <td class="tr" style="font-weight:600">${fmtINR(d.total)}</td>
+    <td class="tr tm">${d.on_roll}</td>
+    <td class="tr tm">${d.off_roll}</td>
     <td class="tr tm">${d.headcount}</td>
   </tr>`).join('');
 
@@ -822,8 +1088,8 @@ function renderCostMtKpis() {
   document.getElementById('cm-quoted-val').textContent  = '₹' + Number(quoted).toLocaleString('en-IN');
   document.getElementById('cm-actual-val').textContent  = '₹' + Number(actual).toLocaleString('en-IN');
 
-  const planVarTxt  = `${planVar>=0?'+':'−'}₹${Math.abs(planVar)}/MT ${planVar>=0?'over':'under'} plan`;
-  const quoteVarTxt = `${quoteVar>=0?'+':'−'}₹${Math.abs(quoteVar)}/MT ${quoteVar>=0?'over':'under'} quote`;
+  const planVarTxt  = `${planVar>=0?'+':'−'}₹${Math.abs(planVar).toFixed(0)}/MT ${planVar>=0?'over':'under'} plan`;
+  const quoteVarTxt = `${quoteVar>=0?'+':'−'}₹${Math.abs(quoteVar).toFixed(0)}/MT ${quoteVar>=0?'over':'under'} quote`;
   document.getElementById('cm-badge-planvar').textContent = planVarTxt;
   document.getElementById('cm-badge-quotevar').textContent = quoteVarTxt;
   document.getElementById('cm-planvar-val').textContent = planVarTxt;
